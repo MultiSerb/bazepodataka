@@ -1,0 +1,175 @@
+
+drop table faze_projekta;--brisanje tabele
+
+
+ALTER TABLE faze_projekta ---izmena tabele
++neka komanda odozdole
+ADD datz date --dodaje kolonu datz tipa date
+ADD CONSTRAINT dat_ch CHECK (datp<=datz);--dodaje uslov
+modify   -trebalo bi da menja ?
+drop column naziv --izbacuje
+
+INSERT INTO radnik (mbr, ime, prz, plt, sef, god)
+VALUES (201, 'Ana', 'Jovic', 30000, null, '18-AUG-1971');--dodaje instancu
+
+DELETE FROM radnik--brise
+WHERE mbr = 701;
+			oba rade bez uslova
+UPDATE radnik--update  
+SET plt = plt*1.2
+WHERE mbr = 201;
+
+
+SELECT * FROM radnik;-sve
+
+SELECT mbr, ime, prz---distinct da se ne ponavljaju
+FROM radnik
+WHERE plt>25000;///WHERE sef IS NULL;///WHERE sef IS NOT NULL;
+//WHERE plt BETWEEN 20000 AND 24000;//WHERE plt >= 20000 AND plt <= 24000; ---ima i or
+//WHERE god NOT BETWEEN '01-JAN-1973' AND '31-DEC-1980';
+//WHERE prz LIKE 'M%';--poredi stringove %znaci da 0 ili vise karaktera iza   , _ da tacno 1
+WHERE ime NOT LIKE 'A%';
+WHERE spr IN (10, 20, 30);//moze not ispred in
+
+WHERE ROWNUM <= 10--10 njih
+
+ORDER BY prz ASC;//redja ih po tome asc/desc
+ORDER BY prz, ime;
+ORDER BY prz ASC, ime DESC;//moze se staviti i asc asc
+ORDER BY 2, 3, plt;//po 2 prom pa po 3 pa po plati
+
+
+SELECT mbr, ime, prz, plt Plata //nazoves kolonu nekako
+FROM radnik
+ORDER BY Plata DESC;
+
+WHERE ime = ANY ('Pera', 'Moma');--nesto od ovoga
+WHERE ime != ALL ('Pera', 'Moma');--nista od ovoga
+WHERE god <= all(SELECT god FROM radnik); --poredi sa svakim
+
+SELECT mbr, plt + null--moze da se sabira umesto null moze bilo koj broj --ako ima null vrv nece raditi mora ovo ispod
+SELECT mbr, plt + NVL(pre, 0)--za null uzima 0
+
+SELECT COALESCE(NULL, 1) -- vraca 1 koji nije null
+SELECT COUNT(*)--vraca ukupan br trojki --savimo npr sef to borji sve sefove(kolona nije null),stavidmo distinct sef broji raz sefove
+SELECT MIN(plt) minimalna_plt, MAX(plt) maksimalna_plt ,  SUM(plt) "Ukupna mesecna plata"-min , max ,suma kad stavimo bez "" to je kao prom a sa "" je ime
+AVG(plt)
+SELECT ROUND(AVG(plt*1.41), 2) --zaokruzuje 2 je broj decimala
+
+GROUP BY mbr;--moras da navedes sve koje ne koristis u select ufjama
+HAVING COUNT(spr) > 2;--uslov za group by (za grupe)
+
+/////////////ugnjezden
+SELECT mbr, ime, prz, plt
+FROM radnik
+WHERE plt > (SELECT AVG(plt) FROM radnik)
+ORDER BY plt ASC;
+
+/////////////////spajanje tabela
+
+SELECT r.mbr, prz, ime, plt, brc
+FROM radnik r, radproj
+WHERE spr = 10 AND r.mbr = radproj.mbr;
+//////////////////////////za istu tabelu
+FROM radnik r, radnik r1
+WHERE r.plt > r1.plt AND r1.mbr = 40;
+/////
+WHERE NOT EXISTS (SELECT mbr FROM radnik r1 WHERE r1.god < r.god);//ili bez not moze ako postoji u tabeli uzme ga
+
+///////////////
+UNION--izmedju 2 selekta (ili) -automatski duplikate uklanja
+union all-ima duplikate
+INTERSECT--(i)zajednicko prikazuje
+MINUS--oduzima prvu od druge tj A razlika od B
+
+//samo spaja
+SELECT ime, prz
+FROM radnik NATURAL JOIN radproj
+///
+FROM radnik r LEFT OUTER JOIN radproj rp ON r.mbr = rp.mbr;//popunjava po ovom levo, desno gde fali podataka ide null
+
+FROM radproj rp RIGHT OUTER JOIN projekat p ON rp.spr=p.spr;//samo suprotno
+
+FROM radproj rp FULL OUTER JOIN projekat p ON rp.spr=p.spr;//popunjava sve
+
+FROM radnik CROSS JOIN projekat;//svaki sa svakim
+////////////////////////////case
+
+
+SELECT mbr, ime, plt,
+CASE
+WHEN plt < 10000 THEN 'mala primanja'
+WHEN plt >=10000 AND plt < 20000 THEN 'srednja primanja'
+WHEN plt >=20000 AND plt < 40000 THEN 'visoka primanja'
+ELSE 'izuzetno visoka primanja'
+END AS visina_primanja
+FROM radnik
+ORDER BY
+CASE visina_primanja
+WHEN 'izuzetno visoka primanja' THEN 1
+WHEN 'visoka primanja' THEN 2
+WHEN 'srednja primanja' THEN 3
+ELSE 4
+END DESC, plt ASC;
+////////////////////////////////////////////////////////////////////////daje ime seleckt upitu i mozes ga koristi kasnije from rukovodiac ru
+WITH rukovodilac AS (
+SELECT mbr, ime, prz, plt, spr
+FROM radnik, projekat WHERE mbr=ruk),
+//////////////////////////////////Pogledi--koriste se kasnije kao tabele from plate..
+CREATE OR REPLACE VIEW plate_radnika (Ime, Prezime, Plata) AS
+SELECT Ime, Prz, Plt
+FROM radnik;
+
+
+////////////////////brisanje
+DROP VIEW pogled;
+
+////////////////sekvencer
+CREATE SEQUENCE SEQ_Mbr
+INCREMENT BY 10
+START WITH 240
+NOCYCLE
+CACHE 10;
+INSERT INTO radnik (Mbr, Prz, Ime, God)
+VALUES (SEQ_Mbr.NEXTVAL, 'Misic', 'Petar', SYSDATE);
+SELECT SEQ_Mbr.CURRVAL
+FROM SYS.DUAL;
+
+//////////////////////
+
+
+LOWER('Sva mala slova') → 'sva mala slova'
+UPPER('Sva velika slova') → 'SVA VELIKA SLOVA'
+INITCAP('Velika početna slova') → ' Velika Početna Slova'
+SUBSTR('DobroJutro', 1, 5) → 'Dobro'
+TRIM('D' FROM 'DobroJutro') → 'obroJutro'
+LENGTH('DobroJutro') → 10
+
+TO_CHAR(god,'yyyy/mm/dd')/to_date/to_Number--iza zareza ide format
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

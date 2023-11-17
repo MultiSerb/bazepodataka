@@ -146,6 +146,77 @@ TRIM('D' FROM 'DobroJutro') → 'obroJutro'
 LENGTH('DobroJutro') → 10
 
 TO_CHAR(god,'yyyy/mm/dd')/to_date/to_Number--iza zareza ide format
+////////////////uradjen
+--1
+
+select idd,nazivd
+from drzava
+order by nazivd asc;
+
+--2
+
+select idv,imev,prezv
+from vozac
+where imev like '%n%' or imev like '%L%';
+
+--3
+
+alter table staza
+add geo_sirina decimal default null;
+
+alter table staza
+add geo_duzina decimal default null;
+
+--4
+
+select ids,nazivs,drzs,nazivd
+from staza s, drzava d
+where s.drzs = d.idd and s.ids in (select stazar from rezultat
+                                   where sezona=2019 and bodovi < (select avg(bodovi) from rezultat));
+--drugi nacin                                   
+select distinct ids,nazivs,drzs,nazivd
+from staza s, drzava d, rezultat r
+where s.drzs = d.idd and  s.ids = r.stazar and sezona= 2019 and bodovi < (select avg(bodovi) from rezultat);
+
+
+--5
+
+select ids,nazivs,drzs,nazivd
+from staza s, drzava d
+where s.drzs = d.idd and s.ids in (select stazar from rezultat
+                                   where vozacr in (select idv from vozac
+                                                    where drzv = s.drzs) and plasman=1);
+                                                    
+--6
+
+select ids,nazivs,drzs,nazivd
+from staza s, drzava d
+where s.drzs = d.idd and s.ids in (select stazar from rezultat
+                                   where vozacr in (select idv from vozac
+                                                    where drzv=3)  minus select stazar from rezultat where vozacr in (select idv from vozac where drzv=1))                  
+
+--7
+--nisam siguran sta hoce u tekstu
+select ids, nazivs, count(plasman)
+from staza s, rezultat r
+where s.ids = r.stazar (+)  
+group by r.stazar,ids,nazivs
+
+order by ids
+                
+
+--8
+
+update staza set nazivs = upper(substr(nazivs,1,length(nazivs)-1)) || substr(nazivs,length(nazivs),length(nazivs))
+
+--9
+
+create or replace view pogled_drzava_nastupi
+select idd,nazivd,nazivs,count(r.vozacr)
+from drzava d, staza s, rezultat r
+where d.idd = s.drzs (+) and s.ids = r.stazar (+)
+group by r.stazar,idd,nazivd,nazivs
+
 
 
 
